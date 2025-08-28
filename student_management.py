@@ -1,13 +1,13 @@
 import sqlite3
 
-# Connect to SQLite (creates database if not exists)
+# Connect to database (creates one if not exists)
 conn = sqlite3.connect("students.db")
 cursor = conn.cursor()
 
 # Create table
 cursor.execute("""
 CREATE TABLE IF NOT EXISTS students (
-    roll_no INTEGER PRIMARY KEY,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
     course TEXT NOT NULL,
     marks INTEGER
@@ -16,81 +16,74 @@ CREATE TABLE IF NOT EXISTS students (
 conn.commit()
 
 
-def add_student(roll_no, name, course, marks):
-    cursor.execute("INSERT INTO students VALUES (?, ?, ?, ?)", (roll_no, name, course, marks))
+# Function to add student
+def add_student(name, course, marks):
+    cursor.execute("INSERT INTO students (name, course, marks) VALUES (?, ?, ?)", (name, course, marks))
     conn.commit()
     print("✅ Student added successfully!")
 
 
+# Function to view all students
 def view_students():
     cursor.execute("SELECT * FROM students")
     rows = cursor.fetchall()
-    print("\n--- Student Records ---")
+    print("\n📋 Student Records:")
     for row in rows:
         print(row)
 
 
-def search_student(roll_no):
-    cursor.execute("SELECT * FROM students WHERE roll_no=?", (roll_no,))
-    row = cursor.fetchone()
-    if row:
-        print("🎓 Student Found:", row)
-    else:
-        print("⚠️ Student not found!")
-
-
-def update_student(roll_no, name, course, marks):
-    cursor.execute("UPDATE students SET name=?, course=?, marks=? WHERE roll_no=?", (name, course, marks, roll_no))
+# Function to update student marks
+def update_student(student_id, marks):
+    cursor.execute("UPDATE students SET marks = ? WHERE id = ?", (marks, student_id))
     conn.commit()
     print("✏️ Student updated successfully!")
 
 
-def delete_student(roll_no):
-    cursor.execute("DELETE FROM students WHERE roll_no=?", (roll_no,))
+# Function to delete student
+def delete_student(student_id):
+    cursor.execute("DELETE FROM students WHERE id = ?", (student_id,))
     conn.commit()
     print("🗑️ Student deleted successfully!")
 
 
-# Menu
-while True:
-    print("\n===== Student Management System =====")
-    print("1. Add Student")
-    print("2. View All Students")
-    print("3. Search Student")
-    print("4. Update Student")
-    print("5. Delete Student")
-    print("6. Exit")
+# Menu-driven program
+def main():
+    while True:
+        print("\n==== Student Management System ====")
+        print("1. Add Student")
+        print("2. View Students")
+        print("3. Update Student Marks")
+        print("4. Delete Student")
+        print("5. Exit")
 
-    choice = input("Enter choice: ")
+        choice = input("Enter your choice: ")
 
-    if choice == "1":
-        r = int(input("Roll No: "))
-        n = input("Name: ")
-        c = input("Course: ")
-        m = int(input("Marks: "))
-        add_student(r, n, c, m)
+        if choice == "1":
+            name = input("Enter name: ")
+            course = input("Enter course: ")
+            marks = int(input("Enter marks: "))
+            add_student(name, course, marks)
 
-    elif choice == "2":
-        view_students()
+        elif choice == "2":
+            view_students()
 
-    elif choice == "3":
-        r = int(input("Enter Roll No to search: "))
-        search_student(r)
+        elif choice == "3":
+            student_id = int(input("Enter Student ID to update: "))
+            marks = int(input("Enter new marks: "))
+            update_student(student_id, marks)
 
-    elif choice == "4":
-        r = int(input("Roll No: "))
-        n = input("New Name: ")
-        c = input("New Course: ")
-        m = int(input("New Marks: "))
-        update_student(r, n, c, m)
+        elif choice == "4":
+            student_id = int(input("Enter Student ID to delete: "))
+            delete_student(student_id)
 
-    elif choice == "5":
-        r = int(input("Enter Roll No to delete: "))
-        delete_student(r)
+        elif choice == "5":
+            print("👋 Exiting... Goodbye!")
+            break
+        else:
+            print("❌ Invalid choice! Try again.")
 
-    elif choice == "6":
-        print("👋 Exiting...")
-        break
 
-    else:
-        print("❌ Invalid choice, try again.")
+if __name__ == "__main__":
+    main()
+    conn.close()
+
